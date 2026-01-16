@@ -47,8 +47,8 @@ The single-cell experiments use four datasets (each corresponding to a different
 
 Each script:
 1. prepares data at various cell numbers and UMI downsampling levels
-2. trains embedding models (PCA, SCVI, Geneformer, Random Projection)
-3. computes mutual information between embeddings and biological signals
+2. fits representation learning models
+3. estimates mutual information between representations and auxiliary signals
 
 ### TissueMNIST image experiments
 
