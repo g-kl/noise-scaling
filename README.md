@@ -40,10 +40,10 @@ The single-cell experiments use four datasets (each corresponding to a different
 
 | Script | Dataset | Biological Signals |
 |--------|---------|-------------------|
-| [run_larry_whole.py](run_larry_whole.py) | Larry et al. | Clone, Time |
-| [run_merfish_whole.py](run_merfish_whole.py) | MERFISH | Spatial (neighborhood) |
-| [run_pbmc_whole.py](run_pbmc_whole.py) | PBMC | Cell type, Protein |
-| [run_shendure_whole.py](run_shendure_whole.py) | Shendure et al. | Temporal |
+| [run_larry_whole.py](run_larry_whole.py) | Weinreb et al., 2020 | Clone |
+| [run_merfish_whole.py](run_merfish_whole.py) | Vizgen data release | Spatial |
+| [run_pbmc_whole.py](run_pbmc_whole.py) | Hao et al., 2021 | Protein |
+| [run_shendure_whole.py](run_shendure_whole.py) | Qiu et al. | Temporal |
 
 Each script:
 1. Prepares data at various cell numbers and UMI downsampling levels
