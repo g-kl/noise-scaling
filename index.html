@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>measurement noise scaling laws</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#1f2937;
+      --muted:#6b7280;
+      --bg:#f6f0ff;
+      --card-bg:#ffffff;
+      --border:rgba(31,41,55,0.06);
+      --link-purple:#efe6ff;
+      --link-blue:#e6f0ff;
+      --link-green:#e6ffef;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg,var(--bg) 0%, #ffffff 100%);
+      font-family: 'M PLUS Rounded 1c', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color:var(--accent);
+      padding:3rem;
+    }
+    .card{
+      width:100%;
+      max-width:900px;
+      background: var(--card-bg);
+      border-radius:8px;
+      padding:2rem;
+      border:1px solid var(--border);
+      line-height:1.45;
+    }
+    .head{display:flex;gap:1rem;align-items:center}
+    .logo{font-size:1.6rem}
+    h1{font-size:1.25rem;margin:0}
+    .authors{color:var(--muted);font-size:0.95rem;margin-top:0.25rem;font-style:italic}
+    .abstract{
+      margin-top:1rem;
+      padding:0.9rem 1rem;
+      border-left:3px solid var(--accent);
+      background: #ffffff;
+      border-radius:6px;
+      color:var(--accent);
+      min-height:4.5rem;
+      font-size:smaller
+    }
+    .card-footer{
+      display:flex;
+      gap:1rem;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:1rem;
+      flex-wrap:wrap;
+      padding-top:0.75rem;
+      border-top:1px solid rgba(31,41,55,0.04);
+    }
+    .desc{ color:var(--muted); font-size:0.95rem; flex:1; min-width:220px; }
+    .links{display:flex;gap:0.75rem;margin-top:0;flex-wrap:wrap}
+    .links a{
+      text-decoration:none;color:var(--accent);
+      padding:0.6rem 0.9rem;border-radius:10px;
+      font-weight:500;display:inline-flex;align-items:center;gap:0.6rem;
+      border:1px solid transparent;
+      transition:transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .links a:hover{ transform:translateY(-3px); }
+    .paper{ background: var(--link-purple); }
+    .code{ background: var(--link-blue); }
+    .zoo { background: var(--link-green); }
+    .note{color:var(--muted);font-size:0.85rem;margin-top:0.9rem}
+
+    @media (max-width:560px){
+      .card{ padding:1.25rem; }
+      .card-footer{ gap:0.75rem; }
+      .desc{ min-width:100%; order:2; }
+      .links{ order:1; width:100%; justify-content:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="head">
+      <div>
+        <h1>A measurement noise scaling law for cellular representation learning</h1>
+        <div class="authors">Gokul Gowri, Igor Sadalski, Dan Raviv, Jonathan Rosenfeld, Allon Klein</div>
+        <div class="authors"> for correspondence: gokulg at mit.edu; allon_klein at hms.harvard.edu</div>
+      </div>
+    </div>
+
+    <div class="abstract" aria-label="abstract">
+      Large genomic and imaging datasets can be used to train models that learn meaningful representations of cellular systems. Across domains, model performance improves predictably with dataset size and compute budget, providing a basis for allocating data and computation. Scientific data, however, is also limited by noise arising from factors such as molecular undersampling, sequencing errors, and image resolution. By fitting 1,670 representation learning models across three data modalities (gene expression, sequence, and image data), we show that noise defines a distinct axis along which performance improves. Noise scaling follows a logarithmic law. We derive the law from a model of noise propagation, and use it to define noise sensitivity and model capacity as benchmarking metrics. We show that protein sequence representations are noise-robust while single cell transcriptomics models are not, with a Transformer-based model showing greater noise robustness but lower saturating performance than a variational autoencoder model. Noise scaling metrics may support future model evaluation and experimental design.
+    </div>
+
+    <div class="card-footer">
+      <div class="desc">
+        Links to the preprint, code, and an interactive "scaling zoo" where you can explore all our empirically observed noise scaling curves.
+      </div>
+      <nav class="links" aria-label="links">
+        <a href="https://arxiv.org/abs/2503.02726" class="paper" target="_blank" rel="noopener">📄 Preprint</a>
+        <a href="https://github.com/ggdna/noise-scaling" class="code" target="_blank" rel="noopener">💻 Code</a>
+        <a href="analysis/noise_fits_interactive.html" class="zoo">🦓 Scaling zoo</a>
+      </nav>
+    </div>
+
+  </main>
+</body>
+</html>

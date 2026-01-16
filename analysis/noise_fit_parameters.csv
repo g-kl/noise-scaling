@@ -164,21 +164,21 @@ Caltech101_Resolution_class94,Caltech101-Pixelation,Class 94,CNN,N/A,0.226040503
 Sequences_ESM2_150M,Sequences,Collection month MI,ESM2-150M,N/A,13.087119205532174,2.8273303093392603
 Sequences_ESM2_35M,Sequences,Collection month MI,ESM2-35M,N/A,18.787879434511137,2.9850412267149404
 Sequences_ESM2_8M,Sequences,Collection month MI,ESM2-8M,N/A,36.75794300622904,3.0227852716635355
-TissueMNIST_Pixel_mi_score,TissueMNIST-Pixelation,8-class MI,CNN,N/A,0.001086999569011149,1.4289056749803122
-TissueMNIST_Pixel_ova_mi_continuous_Class_0,TissueMNIST-Pixelation,Collecting Duct,CNN,N/A,0.0002654993635142949,0.6936759964492487
-TissueMNIST_Pixel_ova_mi_continuous_Class_1,TissueMNIST-Pixelation,Distal Convoluted Tubule,CNN,N/A,0.000310880214704879,0.5309016531369338
-TissueMNIST_Pixel_ova_mi_continuous_Class_2,TissueMNIST-Pixelation,Glomerular endothelial,CNN,N/A,0.00023138565431447543,0.7329371810114033
-TissueMNIST_Pixel_ova_mi_continuous_Class_3,TissueMNIST-Pixelation,Interstitial endothelial,CNN,N/A,0.00039225775703535766,0.7247537373518727
-TissueMNIST_Pixel_ova_mi_continuous_Class_4,TissueMNIST-Pixelation,Leukocytes,CNN,N/A,0.0002926432987551046,0.6765678402594323
-TissueMNIST_Pixel_ova_mi_continuous_Class_5,TissueMNIST-Pixelation,Podocytes,CNN,N/A,0.0005865451835646719,0.6944726562085792
-TissueMNIST_Pixel_ova_mi_continuous_Class_6,TissueMNIST-Pixelation,Proximal Tubule,CNN,N/A,0.0001769020533016748,0.66266069496971
-TissueMNIST_Pixel_ova_mi_continuous_Class_7,TissueMNIST-Pixelation,Thick Ascending Limb,CNN,N/A,0.0002729046398533567,0.6558996614454893
-TissueMNIST_Gaussian_mi_score,TissueMNIST-Gaussian,8-class MI,CNN,N/A,1.5309746911267932,1.5074970849615588
-TissueMNIST_Gaussian_ova_mi_continuous_Class_0,TissueMNIST-Gaussian,Collecting Duct,CNN,N/A,0.2247878213410423,0.7003161381302377
-TissueMNIST_Gaussian_ova_mi_continuous_Class_1,TissueMNIST-Gaussian,Distal Convoluted Tubule,CNN,N/A,0.5976536456497604,0.5604457016453315
-TissueMNIST_Gaussian_ova_mi_continuous_Class_2,TissueMNIST-Gaussian,Glomerular endothelial,CNN,N/A,0.14560920320562934,0.745717681009766
-TissueMNIST_Gaussian_ova_mi_continuous_Class_3,TissueMNIST-Gaussian,Interstitial endothelial,CNN,N/A,0.3022392381571937,0.7503541989369473
-TissueMNIST_Gaussian_ova_mi_continuous_Class_4,TissueMNIST-Gaussian,Leukocytes,CNN,N/A,0.22140414111096682,0.6844666779318531
-TissueMNIST_Gaussian_ova_mi_continuous_Class_5,TissueMNIST-Gaussian,Podocytes,CNN,N/A,0.6207723331797899,0.7148987369956477
-TissueMNIST_Gaussian_ova_mi_continuous_Class_6,TissueMNIST-Gaussian,Proximal Tubule,CNN,N/A,0.20710354335607323,0.6652627301427757
-TissueMNIST_Gaussian_ova_mi_continuous_Class_7,TissueMNIST-Gaussian,Thick Ascending Limb,CNN,N/A,0.31260485501828117,0.6521493384880954
+TissueMNIST_Pixel_mi_score,TissueMNIST-Pixelation,8-class MI,CNN,N/A,0.0010869995689856634,1.428905674977356
+TissueMNIST_Pixel_ova_mi_continuous_Class_0,TissueMNIST-Pixelation,Collecting Duct,CNN,N/A,0.0002654993635171691,0.6936759964497412
+TissueMNIST_Pixel_ova_mi_continuous_Class_1,TissueMNIST-Pixelation,Distal Convoluted Tubule,CNN,N/A,0.0003108802146974237,0.5309016531358249
+TissueMNIST_Pixel_ova_mi_continuous_Class_2,TissueMNIST-Pixelation,Glomerular endothelial,CNN,N/A,0.00023138565431430805,0.7329371810118918
+TissueMNIST_Pixel_ova_mi_continuous_Class_3,TissueMNIST-Pixelation,Interstitial endothelial,CNN,N/A,0.0003922577570457109,0.7247537373533517
+TissueMNIST_Pixel_ova_mi_continuous_Class_4,TissueMNIST-Pixelation,Leukocytes,CNN,N/A,0.00029264329875671347,0.6765678402595383
+TissueMNIST_Pixel_ova_mi_continuous_Class_5,TissueMNIST-Pixelation,Podocytes,CNN,N/A,0.0005865451835782616,0.694472656209967
+TissueMNIST_Pixel_ova_mi_continuous_Class_6,TissueMNIST-Pixelation,Proximal Tubule,CNN,N/A,0.00017690205330150798,0.662660694969673
+TissueMNIST_Pixel_ova_mi_continuous_Class_7,TissueMNIST-Pixelation,Thick Ascending Limb,CNN,N/A,0.00027290463984447485,0.6558996614441381
+TissueMNIST_Gaussian_mi_score,TissueMNIST-Gaussian,8-class MI,CNN,N/A,1.5309746911305466,1.5074970849620604
+TissueMNIST_Gaussian_ova_mi_continuous_Class_0,TissueMNIST-Gaussian,Collecting Duct,CNN,N/A,0.2247878213534499,0.7003161381332581
+TissueMNIST_Gaussian_ova_mi_continuous_Class_1,TissueMNIST-Gaussian,Distal Convoluted Tubule,CNN,N/A,0.5976536456578833,0.5604457016458884
+TissueMNIST_Gaussian_ova_mi_continuous_Class_2,TissueMNIST-Gaussian,Glomerular endothelial,CNN,N/A,0.14560920320328202,0.7457176810086563
+TissueMNIST_Gaussian_ova_mi_continuous_Class_3,TissueMNIST-Gaussian,Interstitial endothelial,CNN,N/A,0.3022392381626883,0.7503541989381928
+TissueMNIST_Gaussian_ova_mi_continuous_Class_4,TissueMNIST-Gaussian,Leukocytes,CNN,N/A,0.221404141110876,0.6844666779318271
+TissueMNIST_Gaussian_ova_mi_continuous_Class_5,TissueMNIST-Gaussian,Podocytes,CNN,N/A,0.620772333165808,0.7148987369940912
+TissueMNIST_Gaussian_ova_mi_continuous_Class_6,TissueMNIST-Gaussian,Proximal Tubule,CNN,N/A,0.2071035433457743,0.6652627301400146
+TissueMNIST_Gaussian_ova_mi_continuous_Class_7,TissueMNIST-Gaussian,Thick Ascending Limb,CNN,N/A,0.3126048550498268,0.6521493384939199
