@@ -1,0 +1,184 @@
+curve_id,category,metric,method,size,u_bar,I_max
+SC_Protein MI_Rand. Proj._size100,Single-cell,Protein MI,Rand. Proj.,100 cells,4874.0762362528185,3.147373749178285
+SC_Protein MI_PCA_size100,Single-cell,Protein MI,PCA,100 cells,3435.419321424828,3.736421087326625
+SC_Protein MI_SCVI_size100,Single-cell,Protein MI,SCVI,100 cells,1029.3808507945062,3.0905566741999557
+SC_Protein MI_Geneformer_size100,Single-cell,Protein MI,Geneformer,100 cells,62.97622856818033,1.9125277759196913
+SC_Protein MI_Rand. Proj._size215,Single-cell,Protein MI,Rand. Proj.,215 cells,4907.471006185346,3.158054794950145
+SC_Protein MI_PCA_size215,Single-cell,Protein MI,PCA,215 cells,3549.022447600185,3.7826903792226516
+SC_Protein MI_SCVI_size215,Single-cell,Protein MI,SCVI,215 cells,766.450292042462,2.97773425689168
+SC_Protein MI_Geneformer_size215,Single-cell,Protein MI,Geneformer,215 cells,134.92558055835173,2.260953592299103
+SC_Protein MI_Rand. Proj._size464,Single-cell,Protein MI,Rand. Proj.,464 cells,4411.983069280688,3.098674325478048
+SC_Protein MI_PCA_size464,Single-cell,Protein MI,PCA,464 cells,4626.588672143008,3.981928887860541
+SC_Protein MI_SCVI_size464,Single-cell,Protein MI,SCVI,464 cells,616.6977684960771,3.011823043325782
+SC_Protein MI_Geneformer_size464,Single-cell,Protein MI,Geneformer,464 cells,152.27271419053298,2.4288354345933794
+SC_Protein MI_Rand. Proj._size1000,Single-cell,Protein MI,Rand. Proj.,1000 cells,4826.307657148158,3.150997024142927
+SC_Protein MI_PCA_size1000,Single-cell,Protein MI,PCA,1000 cells,6872.662549981889,4.281748676538086
+SC_Protein MI_SCVI_size1000,Single-cell,Protein MI,SCVI,1000 cells,813.668169892943,3.2696118454093264
+SC_Protein MI_Geneformer_size1000,Single-cell,Protein MI,Geneformer,1000 cells,259.35236918575805,2.805489379176056
+SC_Protein MI_Rand. Proj._size2154,Single-cell,Protein MI,Rand. Proj.,2154 cells,5114.7761591787375,3.183274944648195
+SC_Protein MI_PCA_size2154,Single-cell,Protein MI,PCA,2154 cells,6066.946318297672,4.173417285182391
+SC_Protein MI_SCVI_size2154,Single-cell,Protein MI,SCVI,2154 cells,807.3999602893731,3.4220304247945195
+SC_Protein MI_Geneformer_size2154,Single-cell,Protein MI,Geneformer,2154 cells,180.3909977413932,2.5905631089432317
+SC_Protein MI_Rand. Proj._size4641,Single-cell,Protein MI,Rand. Proj.,4641 cells,4665.200667369015,3.1336239076365926
+SC_Protein MI_PCA_size4641,Single-cell,Protein MI,PCA,4641 cells,6438.906021580575,4.260713724971045
+SC_Protein MI_SCVI_size4641,Single-cell,Protein MI,SCVI,4641 cells,1366.7614341692151,3.895945962826347
+SC_Protein MI_Geneformer_size4641,Single-cell,Protein MI,Geneformer,4641 cells,286.98474024842994,2.902131753326855
+SC_Protein MI_Rand. Proj._size10000,Single-cell,Protein MI,Rand. Proj.,10000 cells,4734.16894298343,3.1372599851011507
+SC_Protein MI_PCA_size10000,Single-cell,Protein MI,PCA,10000 cells,4774.0222485679515,4.077351265813491
+SC_Protein MI_SCVI_size10000,Single-cell,Protein MI,SCVI,10000 cells,3339.6813125841454,4.587957758297584
+SC_Protein MI_Geneformer_size10000,Single-cell,Protein MI,Geneformer,10000 cells,526.1576162300205,3.3009107831248143
+SC_Protein MI_Rand. Proj._size21544,Single-cell,Protein MI,Rand. Proj.,21544 cells,4358.845386572709,3.0873466334833575
+SC_Protein MI_PCA_size21544,Single-cell,Protein MI,PCA,21544 cells,4123.493485158836,4.00195955712154
+SC_Protein MI_SCVI_size21544,Single-cell,Protein MI,SCVI,21544 cells,6967.929583161147,5.162140361905563
+SC_Protein MI_Geneformer_size21544,Single-cell,Protein MI,Geneformer,21544 cells,733.462386751095,3.5521829990853564
+SC_Protein MI_Rand. Proj._size46415,Single-cell,Protein MI,Rand. Proj.,46415 cells,4741.412007241433,3.134272097381552
+SC_Protein MI_PCA_size46415,Single-cell,Protein MI,PCA,46415 cells,4242.25909603863,4.007239791148187
+SC_Protein MI_SCVI_size46415,Single-cell,Protein MI,SCVI,46415 cells,5215.661426876799,5.106424081454601
+SC_Protein MI_Geneformer_size46415,Single-cell,Protein MI,Geneformer,46415 cells,785.7823531579722,3.613139541193535
+SC_Protein MI_Rand. Proj._size100000,Single-cell,Protein MI,Rand. Proj.,100000 cells,5145.051925071836,3.1880378079210763
+SC_Protein MI_PCA_size100000,Single-cell,Protein MI,PCA,100000 cells,5017.333819810925,4.095689900964461
+SC_Protein MI_SCVI_size100000,Single-cell,Protein MI,SCVI,100000 cells,4861.121825943463,5.17651814491296
+SC_Protein MI_Geneformer_size100000,Single-cell,Protein MI,Geneformer,100000 cells,879.1372751133637,3.7828906910753592
+SC_Clonal MI_Rand. Proj._size100,Single-cell,Clonal MI,Rand. Proj.,100 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size100,Single-cell,Clonal MI,PCA,100 cells,2205.843305897415,1.7392124834940694
+SC_Clonal MI_SCVI_size100,Single-cell,Clonal MI,SCVI,100 cells,845.0362755708456,0.8923075194433124
+SC_Clonal MI_Geneformer_size100,Single-cell,Clonal MI,Geneformer,100 cells,19.211463828388748,0.05264410408574245
+SC_Clonal MI_Rand. Proj._size215,Single-cell,Clonal MI,Rand. Proj.,215 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size215,Single-cell,Clonal MI,PCA,215 cells,2208.723255218095,1.795045466805604
+SC_Clonal MI_SCVI_size215,Single-cell,Clonal MI,SCVI,215 cells,996.4825210605283,1.1081858174785342
+SC_Clonal MI_Rand. Proj._size464,Single-cell,Clonal MI,Rand. Proj.,464 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size464,Single-cell,Clonal MI,PCA,464 cells,2232.542828846545,1.8007556364847104
+SC_Clonal MI_SCVI_size464,Single-cell,Clonal MI,SCVI,464 cells,706.5547800833513,1.175295923380543
+SC_Clonal MI_Geneformer_size464,Single-cell,Clonal MI,Geneformer,464 cells,723.1347311698271,0.49722299323373675
+SC_Clonal MI_Rand. Proj._size1000,Single-cell,Clonal MI,Rand. Proj.,1000 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size1000,Single-cell,Clonal MI,PCA,1000 cells,2477.7952775584513,1.8989416562716677
+SC_Clonal MI_SCVI_size1000,Single-cell,Clonal MI,SCVI,1000 cells,998.0132594643097,1.533747068251698
+SC_Clonal MI_Geneformer_size1000,Single-cell,Clonal MI,Geneformer,1000 cells,781.3564108645426,0.8955444282919044
+SC_Clonal MI_Rand. Proj._size2154,Single-cell,Clonal MI,Rand. Proj.,2154 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size2154,Single-cell,Clonal MI,PCA,2154 cells,2169.5397344255516,1.854523136836372
+SC_Clonal MI_SCVI_size2154,Single-cell,Clonal MI,SCVI,2154 cells,1458.4934607809632,1.9435480415630975
+SC_Clonal MI_Geneformer_size2154,Single-cell,Clonal MI,Geneformer,2154 cells,1071.8329106677866,1.2496968963784036
+SC_Clonal MI_Rand. Proj._size4641,Single-cell,Clonal MI,Rand. Proj.,4641 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size4641,Single-cell,Clonal MI,PCA,4641 cells,2322.299374501833,1.8801780170961144
+SC_Clonal MI_SCVI_size4641,Single-cell,Clonal MI,SCVI,4641 cells,1152.250886287152,1.990345799511605
+SC_Clonal MI_Geneformer_size4641,Single-cell,Clonal MI,Geneformer,4641 cells,729.5269114070982,1.2438695872024226
+SC_Clonal MI_Rand. Proj._size10000,Single-cell,Clonal MI,Rand. Proj.,10000 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size10000,Single-cell,Clonal MI,PCA,10000 cells,2058.2636889376286,1.832683972459189
+SC_Clonal MI_SCVI_size10000,Single-cell,Clonal MI,SCVI,10000 cells,1164.5884166317014,2.1044228008254726
+SC_Clonal MI_Geneformer_size10000,Single-cell,Clonal MI,Geneformer,10000 cells,830.9881236297911,1.3093827379190064
+SC_Clonal MI_Rand. Proj._size21544,Single-cell,Clonal MI,Rand. Proj.,21544 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size21544,Single-cell,Clonal MI,PCA,21544 cells,2266.4115221239836,1.9018732586038483
+SC_Clonal MI_SCVI_size21544,Single-cell,Clonal MI,SCVI,21544 cells,763.4461521088789,1.9335374327024784
+SC_Clonal MI_Geneformer_size21544,Single-cell,Clonal MI,Geneformer,21544 cells,483.4032022018214,1.1231851379861686
+SC_Clonal MI_Rand. Proj._size46415,Single-cell,Clonal MI,Rand. Proj.,46415 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size46415,Single-cell,Clonal MI,PCA,46415 cells,2260.5934425065034,1.8873090025156267
+SC_Clonal MI_SCVI_size46415,Single-cell,Clonal MI,SCVI,46415 cells,659.0980558556698,1.8796470885520193
+SC_Clonal MI_Geneformer_size46415,Single-cell,Clonal MI,Geneformer,46415 cells,325.85105209190783,1.048963702679644
+SC_Clonal MI_Rand. Proj._size100000,Single-cell,Clonal MI,Rand. Proj.,100000 cells,1686.9990197829488,0.5315048792035284
+SC_Clonal MI_PCA_size100000,Single-cell,Clonal MI,PCA,100000 cells,2369.7158276323075,1.8997093418412696
+SC_Clonal MI_SCVI_size100000,Single-cell,Clonal MI,SCVI,100000 cells,598.4059149271128,1.8595121240409511
+SC_Clonal MI_Geneformer_size100000,Single-cell,Clonal MI,Geneformer,100000 cells,555.2048083755432,1.3095014619372678
+SC_Temporal MI_Rand. Proj._size100,Single-cell,Temporal MI,Rand. Proj.,100 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size100,Single-cell,Temporal MI,PCA,100 cells,719.7030574719911,0.9670097659412468
+SC_Temporal MI_SCVI_size100,Single-cell,Temporal MI,SCVI,100 cells,1637.9652431036575,1.8930220125507295
+SC_Temporal MI_Geneformer_size100,Single-cell,Temporal MI,Geneformer,100 cells,116.02127055153629,0.8024002625576371
+SC_Temporal MI_Rand. Proj._size4641,Single-cell,Temporal MI,Rand. Proj.,4641 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size4641,Single-cell,Temporal MI,PCA,4641 cells,837.5618393708161,1.2207657425193843
+SC_Temporal MI_SCVI_size4641,Single-cell,Temporal MI,SCVI,4641 cells,792.8212039809276,2.298237463724976
+SC_Temporal MI_Geneformer_size4641,Single-cell,Temporal MI,Geneformer,4641 cells,403.60607412968704,1.7941515767737994
+SC_Temporal MI_Rand. Proj._size359,Single-cell,Temporal MI,Rand. Proj.,359 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size359,Single-cell,Temporal MI,PCA,359 cells,945.8474333281775,1.1330465142784663
+SC_Temporal MI_SCVI_size359,Single-cell,Temporal MI,SCVI,359 cells,956.2527557586012,1.8358809490159125
+SC_Temporal MI_Geneformer_size359,Single-cell,Temporal MI,Geneformer,359 cells,207.21674513746464,1.2432545999444402
+SC_Temporal MI_Rand. Proj._size1291,Single-cell,Temporal MI,Rand. Proj.,1291 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size1291,Single-cell,Temporal MI,PCA,1291 cells,954.2265884215669,1.215875158991465
+SC_Temporal MI_SCVI_size1291,Single-cell,Temporal MI,SCVI,1291 cells,635.8325128435049,1.847486698268348
+SC_Temporal MI_Geneformer_size1291,Single-cell,Temporal MI,Geneformer,1291 cells,271.35090020199465,1.5041209491505223
+SC_Temporal MI_Rand. Proj._size16681,Single-cell,Temporal MI,Rand. Proj.,16681 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size16681,Single-cell,Temporal MI,PCA,16681 cells,820.6325738688743,1.2208197149073565
+SC_Temporal MI_SCVI_size16681,Single-cell,Temporal MI,SCVI,16681 cells,535.010020766939,2.229266547144788
+SC_Temporal MI_Geneformer_size16681,Single-cell,Temporal MI,Geneformer,16681 cells,342.72961668910983,1.9382973134105013
+SC_Temporal MI_Rand. Proj._size59948,Single-cell,Temporal MI,Rand. Proj.,59948 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size59948,Single-cell,Temporal MI,PCA,59948 cells,855.8344078614837,1.2364983398642286
+SC_Temporal MI_SCVI_size59948,Single-cell,Temporal MI,SCVI,59948 cells,367.44395976206937,2.1398777942492853
+SC_Temporal MI_Geneformer_size59948,Single-cell,Temporal MI,Geneformer,59948 cells,279.5211459146624,1.9904790211343877
+SC_Temporal MI_Rand. Proj._size215443,Single-cell,Temporal MI,Rand. Proj.,215443 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size215443,Single-cell,Temporal MI,PCA,215443 cells,755.2266512215289,1.201342941933132
+SC_Temporal MI_SCVI_size215443,Single-cell,Temporal MI,SCVI,215443 cells,384.3145120197971,2.277182130436421
+SC_Temporal MI_Geneformer_size215443,Single-cell,Temporal MI,Geneformer,215443 cells,303.683970576926,2.036428806491966
+SC_Temporal MI_Rand. Proj._size774263,Single-cell,Temporal MI,Rand. Proj.,774263 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size774263,Single-cell,Temporal MI,PCA,774263 cells,688.7778025555536,1.1775666687305049
+SC_Temporal MI_SCVI_size774263,Single-cell,Temporal MI,SCVI,774263 cells,311.12107163774164,2.245976688310268
+SC_Temporal MI_Geneformer_size774263,Single-cell,Temporal MI,Geneformer,774263 cells,296.0667052471977,2.0699216319365092
+SC_Temporal MI_Rand. Proj._size2782559,Single-cell,Temporal MI,Rand. Proj.,2782559 cells,1273.4304877494158,0.7832226776145234
+SC_Temporal MI_PCA_size2782559,Single-cell,Temporal MI,PCA,2782559 cells,683.8461558500123,1.1718877417057858
+SC_Temporal MI_SCVI_size2782559,Single-cell,Temporal MI,SCVI,2782559 cells,391.8331439653044,2.3634719074291337
+SC_Temporal MI_Geneformer_size2782559,Single-cell,Temporal MI,Geneformer,2782559 cells,381.1684804760288,2.062761074498014
+SC_Temporal MI_Rand. Proj._size10000000,Single-cell,Temporal MI,Rand. Proj.,10000000 cells,1358.869012770207,0.8046578109999707
+SC_Temporal MI_PCA_size10000000,Single-cell,Temporal MI,PCA,10000000 cells,766.0474554787774,1.2015378914746095
+SC_Temporal MI_SCVI_size10000000,Single-cell,Temporal MI,SCVI,10000000 cells,315.5541339091529,2.4698860354427614
+SC_Temporal MI_Geneformer_size10000000,Single-cell,Temporal MI,Geneformer,10000000 cells,297.3924512438379,2.037218516517217
+SC_Spatial MI_Rand. Proj._size100,Single-cell,Spatial MI,Rand. Proj.,100 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_PCA_size100,Single-cell,Spatial MI,PCA,100 cells,1427.1557786640628,2.373480269583732
+SC_Spatial MI_SCVI_size100,Single-cell,Spatial MI,SCVI,100 cells,280.1229960363338,1.0535224971683084
+SC_Spatial MI_Geneformer_size100,Single-cell,Spatial MI,Geneformer,100 cells,34.80763938554225,0.45186317944789467
+SC_Spatial MI_Rand. Proj._size203,Single-cell,Spatial MI,Rand. Proj.,203 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_PCA_size203,Single-cell,Spatial MI,PCA,203 cells,3264.2097088624223,2.9984062982234416
+SC_Spatial MI_SCVI_size203,Single-cell,Spatial MI,SCVI,203 cells,413.75622237724724,1.292040350295663
+SC_Spatial MI_Geneformer_size203,Single-cell,Spatial MI,Geneformer,203 cells,49.255405743795784,0.506968777405771
+SC_Spatial MI_Rand. Proj._size414,Single-cell,Spatial MI,Rand. Proj.,414 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_PCA_size414,Single-cell,Spatial MI,PCA,414 cells,2331.9220295358277,2.8785096578705103
+SC_Spatial MI_SCVI_size414,Single-cell,Spatial MI,SCVI,414 cells,463.91616546320614,1.4033618910134602
+SC_Spatial MI_Geneformer_size414,Single-cell,Spatial MI,Geneformer,414 cells,91.65735295919531,0.7581188809656747
+SC_Spatial MI_Rand. Proj._size843,Single-cell,Spatial MI,Rand. Proj.,843 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_Geneformer_size843,Single-cell,Spatial MI,Geneformer,843 cells,121.9578261894956,0.9493851417108272
+SC_Spatial MI_Rand. Proj._size1716,Single-cell,Spatial MI,Rand. Proj.,1716 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_Geneformer_size1716,Single-cell,Spatial MI,Geneformer,1716 cells,274.525710871233,1.3285749546344978
+SC_Spatial MI_Rand. Proj._size3494,Single-cell,Spatial MI,Rand. Proj.,3494 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_Geneformer_size3494,Single-cell,Spatial MI,Geneformer,3494 cells,410.25136392642196,1.6324122648771162
+SC_Spatial MI_Rand. Proj._size7113,Single-cell,Spatial MI,Rand. Proj.,7113 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_PCA_size7113,Single-cell,Spatial MI,PCA,7113 cells,3136.5350492173225,3.202786687695512
+SC_Spatial MI_SCVI_size7113,Single-cell,Spatial MI,SCVI,7113 cells,736.0673827376875,2.58189472419964
+SC_Spatial MI_Geneformer_size7113,Single-cell,Spatial MI,Geneformer,7113 cells,323.1950620275933,1.4995159290710327
+SC_Spatial MI_Rand. Proj._size14480,Single-cell,Spatial MI,Rand. Proj.,14480 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_PCA_size14480,Single-cell,Spatial MI,PCA,14480 cells,2752.1913253789794,3.115883380818453
+SC_Spatial MI_SCVI_size14480,Single-cell,Spatial MI,SCVI,14480 cells,614.1847542959971,2.5340496043371723
+SC_Spatial MI_Geneformer_size14480,Single-cell,Spatial MI,Geneformer,14480 cells,253.82823154003538,1.4584717399958866
+SC_Spatial MI_Rand. Proj._size29475,Single-cell,Spatial MI,Rand. Proj.,29475 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_SCVI_size29475,Single-cell,Spatial MI,SCVI,29475 cells,791.6053979497806,2.7597451722505206
+SC_Spatial MI_Geneformer_size29475,Single-cell,Spatial MI,Geneformer,29475 cells,355.4195598169519,1.6724736112263792
+SC_Spatial MI_Rand. Proj._size60000,Single-cell,Spatial MI,Rand. Proj.,60000 cells,250.53456846841155,0.6955355064832403
+SC_Spatial MI_PCA_size60000,Single-cell,Spatial MI,PCA,60000 cells,3509.6958334798305,3.302259547894004
+SC_Spatial MI_SCVI_size60000,Single-cell,Spatial MI,SCVI,60000 cells,557.9961366625325,2.5604114639905093
+SC_Spatial MI_Geneformer_size60000,Single-cell,Spatial MI,Geneformer,60000 cells,274.4951793198513,1.549196008597262
+Caltech101_Gaussian_class0,Caltech101-Gaussian,Class 0,CNN,N/A,0.15187916955244649,1.0172352218896308
+Caltech101_Gaussian_class1,Caltech101-Gaussian,Class 1,CNN,N/A,0.03939746813496134,0.9428268326683181
+Caltech101_Gaussian_class3,Caltech101-Gaussian,Class 3,CNN,N/A,0.031744061596988005,0.9756074905131046
+Caltech101_Gaussian_class5,Caltech101-Gaussian,Class 5,CNN,N/A,0.07533781021284737,0.9989710867192425
+Caltech101_Gaussian_class94,Caltech101-Gaussian,Class 94,CNN,N/A,0.4122239077740687,0.9899733756253059
+Caltech101_Resolution_class0,Caltech101-Pixelation,Class 0,CNN,N/A,0.08631624125132747,1.070740299374275
+Caltech101_Resolution_class1,Caltech101-Pixelation,Class 1,CNN,N/A,0.041052308713738654,1.0009488994758904
+Caltech101_Resolution_class3,Caltech101-Pixelation,Class 3,CNN,N/A,0.05675594951967752,1.061181845214775
+Caltech101_Resolution_class5,Caltech101-Pixelation,Class 5,CNN,N/A,0.057404540787364663,1.0677707171507151
+Caltech101_Resolution_class94,Caltech101-Pixelation,Class 94,CNN,N/A,0.22604050316262742,1.2088335208721372
+Sequences_ESM2_150M,Sequences,Collection month MI,ESM2-150M,N/A,13.087119205532174,2.8273303093392603
+Sequences_ESM2_35M,Sequences,Collection month MI,ESM2-35M,N/A,18.787879434511137,2.9850412267149404
+Sequences_ESM2_8M,Sequences,Collection month MI,ESM2-8M,N/A,36.75794300622904,3.0227852716635355
+TissueMNIST_Pixel_mi_score,TissueMNIST-Pixelation,8-class MI,CNN,N/A,0.001086999569011149,1.4289056749803122
+TissueMNIST_Pixel_ova_mi_continuous_Class_0,TissueMNIST-Pixelation,Collecting Duct,CNN,N/A,0.0002654993635142949,0.6936759964492487
+TissueMNIST_Pixel_ova_mi_continuous_Class_1,TissueMNIST-Pixelation,Distal Convoluted Tubule,CNN,N/A,0.000310880214704879,0.5309016531369338
+TissueMNIST_Pixel_ova_mi_continuous_Class_2,TissueMNIST-Pixelation,Glomerular endothelial,CNN,N/A,0.00023138565431447543,0.7329371810114033
+TissueMNIST_Pixel_ova_mi_continuous_Class_3,TissueMNIST-Pixelation,Interstitial endothelial,CNN,N/A,0.00039225775703535766,0.7247537373518727
+TissueMNIST_Pixel_ova_mi_continuous_Class_4,TissueMNIST-Pixelation,Leukocytes,CNN,N/A,0.0002926432987551046,0.6765678402594323
+TissueMNIST_Pixel_ova_mi_continuous_Class_5,TissueMNIST-Pixelation,Podocytes,CNN,N/A,0.0005865451835646719,0.6944726562085792
+TissueMNIST_Pixel_ova_mi_continuous_Class_6,TissueMNIST-Pixelation,Proximal Tubule,CNN,N/A,0.0001769020533016748,0.66266069496971
+TissueMNIST_Pixel_ova_mi_continuous_Class_7,TissueMNIST-Pixelation,Thick Ascending Limb,CNN,N/A,0.0002729046398533567,0.6558996614454893
+TissueMNIST_Gaussian_mi_score,TissueMNIST-Gaussian,8-class MI,CNN,N/A,1.5309746911267932,1.5074970849615588
+TissueMNIST_Gaussian_ova_mi_continuous_Class_0,TissueMNIST-Gaussian,Collecting Duct,CNN,N/A,0.2247878213410423,0.7003161381302377
+TissueMNIST_Gaussian_ova_mi_continuous_Class_1,TissueMNIST-Gaussian,Distal Convoluted Tubule,CNN,N/A,0.5976536456497604,0.5604457016453315
+TissueMNIST_Gaussian_ova_mi_continuous_Class_2,TissueMNIST-Gaussian,Glomerular endothelial,CNN,N/A,0.14560920320562934,0.745717681009766
+TissueMNIST_Gaussian_ova_mi_continuous_Class_3,TissueMNIST-Gaussian,Interstitial endothelial,CNN,N/A,0.3022392381571937,0.7503541989369473
+TissueMNIST_Gaussian_ova_mi_continuous_Class_4,TissueMNIST-Gaussian,Leukocytes,CNN,N/A,0.22140414111096682,0.6844666779318531
+TissueMNIST_Gaussian_ova_mi_continuous_Class_5,TissueMNIST-Gaussian,Podocytes,CNN,N/A,0.6207723331797899,0.7148987369956477
+TissueMNIST_Gaussian_ova_mi_continuous_Class_6,TissueMNIST-Gaussian,Proximal Tubule,CNN,N/A,0.20710354335607323,0.6652627301427757
+TissueMNIST_Gaussian_ova_mi_continuous_Class_7,TissueMNIST-Gaussian,Thick Ascending Limb,CNN,N/A,0.31260485501828117,0.6521493384880954
