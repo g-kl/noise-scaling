@@ -2,7 +2,7 @@
 
 This repo contains code to reproduce the results from our [paper introducing measurement noise scaling laws](https://arxiv.org/abs/2503.02726). A lot of this code (all of the single-cell infrastructure) was written by [Igor Sadalski](https://github.com/igor-sadalski/Scaling-up-measurement-noise-scaling-laws). Below we provide some tips for navigating the repository.
 
-We also provide a [companion website](https://ggdna.github.io/noise-scaling/) which includes an interactive "scaling zoo" where you can explore all the noise scaling curves we observed in this work.
+We also provide a [companion website](https://g-kl.github.io/noise-scaling/) which includes an interactive "scaling zoo" where you can explore all the noise scaling curves we observed in this work.
 
 ## Figure --> source data mapping
 
