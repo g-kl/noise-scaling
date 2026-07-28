@@ -1,5 +1,8 @@
 crick
 latentmi
+lmfit
+omegaconf
+pytorch-lightning
 ipykernel
 scvi-tools
 anndata>=0.11

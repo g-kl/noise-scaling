@@ -175,7 +175,10 @@ class Geneformer(BaseAlgorithm):
         )
 
         if torch.cuda.is_available() and self.model is not None:
+            # After CUDA_VISIBLE_DEVICES is set in BaseAlgorithm.__init__,
+            # the specified device is visible as cuda:0
             self.model = self.model.to("cuda:0")
+            print(f"Geneformer model moved to GPU (device {self.device} visible as cuda:0)")
 
         if self.model is not None:
             self.model = self.model.train()
@@ -194,8 +197,48 @@ class Geneformer(BaseAlgorithm):
         self.trainer.save_model(self.model_path)
         wandb.finish()
 
-    def embed(self, inference_batch_size: int | None = 50) -> np.ndarray:
+    def compute_test_loss(self) -> float:
+        """Compute MLM loss on the test set using the saved model."""
+        with open(self.token_dictionary_path, "rb") as fp:
+            token_dictionary = pickle.load(fp)
 
+        test_dataset = load_from_disk(str(self.geneformer_test_path))
+        model = BertForMaskedLM.from_pretrained(str(self.model_path))
+        if torch.cuda.is_available():
+            model = model.to("cuda:0")
+
+        eval_args = TrainingArguments(
+            output_dir=str(self.save_folder_path / "eval_tmp"),
+            per_device_eval_batch_size=self.per_device_eval_bs,
+            do_eval=True,
+            report_to="none",
+        )
+
+        trainer = GeneformerPretrainer(
+            model=model,
+            args=eval_args,
+            eval_dataset=test_dataset,
+            token_dictionary=token_dictionary,
+            example_lengths_file=str(self.lengths_path),
+        )
+
+        metrics = trainer.evaluate()
+        test_loss = metrics["eval_loss"]
+
+        with open(self.test_loss_path, "w") as f:
+            f.write(f"{test_loss:.6f}")
+        print(f"Geneformer test loss: {test_loss:.6f} saved to {self.test_loss_path}")
+        return test_loss
+
+    def embed(self, inference_batch_size: int | None = 50) -> np.ndarray:
+        # Ensure GPU is available and being used
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                f"GPU is required for Geneformer embedding but CUDA is not available. "
+                f"Requested device: {self.device}"
+            )
+        
+        print(f"Geneformer using GPU (device {self.device} visible as cuda:0) for embedding extraction")
         self.geneformer_test_path = self.test_data_path / "tokenized.dataset"
 
         if self.dataset_name.lower() == "larry":

@@ -85,9 +85,17 @@ class SCVI(BaseAlgorithm):
             "compile": False,
         }
 
+        # Ensure GPU is available
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                f"GPU is required for SCVI training but CUDA is not available. "
+                f"Requested device: {self.device}"
+            )
+        
+        print(f"SCVI training using GPU (device {self.device} visible as cuda:0)")
         self.vae.train(
             accelerator="gpu",
-            devices=1,
+            devices=1,  # After CUDA_VISIBLE_DEVICES, device 0 is the correct GPU
             train_size=0.8,
             validation_size=0.2,
             shuffle_set_split=True,
@@ -113,12 +121,35 @@ class SCVI(BaseAlgorithm):
 
         return self.vae
 
+    def compute_test_loss(self) -> float:
+        """Compute ELBO on the test set using the saved model."""
+        adata_test = ad.read_h5ad(
+            self.test_data_path / "preprocessed.h5ad",
+            backed="r",
+        )
+        vae = scvi.model.SCVI.load(dir_path=self.model_path, adata=adata_test)
+        # get_elbo returns the ELBO (higher = better fit)
+        elbo = vae.get_elbo(adata_test)
+
+        with open(self.test_loss_path, "w") as f:
+            f.write(f"{elbo:.6f}")
+        print(f"SCVI test ELBO: {elbo:.6f} saved to {self.test_loss_path}")
+        return elbo
+
     def embed(self) -> np.ndarray:
+        # Ensure GPU is available and being used
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                f"GPU is required for SCVI embedding but CUDA is not available. "
+                f"Requested device: {self.device}"
+            )
+        
         adata_test: ad.AnnData = ad.read_h5ad(
             self.test_data_path / "preprocessed.h5ad",
             backed="r",
         )
         print(self.test_data_path / "preprocessed.h5ad")
+        print(f"SCVI using GPU (device {self.device} visible as cuda:0)")
         self.vae = scvi.model.SCVI.load(dir_path=self.model_path, adata=adata_test)
         latent_representation = self.vae.get_latent_representation(adata_test)
         latent_df = pd.DataFrame(latent_representation)
