@@ -1,0 +1,17 @@
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrr}
+\hline
+Metric & Geneformer & PCA & Random Projection & SCVI & STATE & Actual UMIs \\
+\hline
+
+Temporal MI & $2571.7 \pm 201.0$ & $5606.3 \pm 993.9$ & $8012.5 \pm 1028.9$ & $2815.5 \pm 198.8$ & $6837.2 \pm 1826.0$ & 2500 \\
+Clonal MI & $4212.9 \pm 854.2$ & $20190.1 \pm 3764.6$ & $7339.7 \pm 1673.0$ & $5073.3 \pm 457.0$ & $39277.4 \pm 21595.9$ & 2580 \\
+Spatial MI & $2212.0 \pm 537.3$ & $32107.4 \pm 31922.3$ & $1339.9 \pm 177.0$ & $5000.4 \pm 830.7$ & $9748.1 \pm 9869.7$ & 367 \\
+Protein MI & $8090.1 \pm 1510.3$ & $46266.5 \pm 9330.3$ & $46989.6 \pm 5008.1$ & $44958.4 \pm 6071.7$ & $21970.6 \pm 5323.0$ & 8100 \\
+
+\hline
+\end{tabular}
+\caption{$\eta_{90}$ values by metric and model family, with $\pm2\sigma$.}
+\label{tab:u90}
+\end{table}

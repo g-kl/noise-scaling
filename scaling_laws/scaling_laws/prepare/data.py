@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import time
+import traceback
 import scvi
 from tqdm import tqdm
 import multiprocessing as mp
@@ -126,6 +127,27 @@ class PrepareData:
         print(f"Removed {removed_cells} cells ({removed_cells/initial_cells:.1%} of total) with zero counts")
 
         adata.write_h5ad(self.preprocessed / "preprocessed.h5ad")
+
+    def prepare_for_state(self, profile_name: str, split: str = "train") -> Path:
+        """Create state_data/ directory and write a CSV manifest for this split.
+
+        Args:
+            profile_name: The profile name used by ``state emb preprocess``.
+            split: One of 'train', 'val', or 'test'.
+
+        Returns:
+            Path to the written CSV manifest.
+        """
+        state_data_dir = self.preprocessed / "state_data"
+        state_data_dir.mkdir(parents=True, exist_ok=True)
+
+        h5ad_path = self.preprocessed / "preprocessed.h5ad"
+        csv_path = state_data_dir / f"{split}.csv"
+        csv_path.write_text(
+            f"species,path,names\nhuman,{h5ad_path},{profile_name}_{split}\n"
+        )
+        print(f"  State {split} manifest: {csv_path}")
+        return csv_path
 
     def median_files(self, sizes: list[int]):
 
@@ -271,14 +293,30 @@ class PrepareData:
             adata.obs = pd.concat([adata.obs, protein_df], axis=1)
 
         elif dataset_name == "shendure":
-            adata = ad.read_h5ad(
-                "/home/jupyter/gokul_paper/somite-models/Geneformer/data/subsamples/shendure_sample_1000000.h5ad",
-                backed=True,
-            )
+            import urllib.request
+
+            shendure_url = "https://datasets.cellxgene.cziscience.com/a5a85963-8004-41a1-8eb5-ca65266d89c3.h5ad"
+            shendure_file = raw_data_path / "raw.h5ad"
+
+            if not shendure_file.exists():
+                print(f"Downloading shendure data from {shendure_url}")
+                print(f"Saving to {shendure_file}")
+                urllib.request.urlretrieve(shendure_url, shendure_file)
+                print("Download complete")
+            else:
+                print(f"Using existing shendure data at {shendure_file}")
+
+            adata = ad.read_h5ad(str(shendure_file), backed=True)
 
         elif dataset_name == "merfish":
-            meta = pd.read_csv("/home/jupyter/igor_repos/noise_scaling_laws/data/raw/S1R1_meta.csv", index_col=0)
-            cxg = pd.read_csv("/home/jupyter/igor_repos/noise_scaling_laws/data/raw/S1R1_cxg.csv", index_col=0)
+            raw_dir = path_to_data_dir / "raw"
+            raw_dir.mkdir(parents=True, exist_ok=True)
+            # Raw merfish CSVs live next to the dataset's `raw/` dir; the older
+            # absolute paths under /home/igor/exploration/ are dead.
+            meta_csv = raw_dir / "S1R1_meta.csv"
+            cxg_csv = raw_dir / "S1R1_cxg.csv"
+            meta = pd.read_csv(meta_csv, index_col=0)
+            cxg = pd.read_csv(cxg_csv, index_col=0)
             rnas = [x for x in cxg.keys() if "Blank" not in x]
             adata = ad.AnnData(cxg[rnas])
             sparse_X = sp.csr_matrix(adata.X)
@@ -377,6 +415,84 @@ class PrepareData:
             raise FileNotFoundError(f"Downsampled data not found at {downsampled_path}")
 
 
+def _prepare_state_data_single(
+    path_to_data_dir, dataset, size, quality,
+    esm_embeddings_path, state_python, state_package_dir, state_defaults_yaml,
+):
+    """Prepare STATE preprocessing profile for a single (dataset, size, quality) combo.
+
+    Top-level function so it can be pickled by ProcessPoolExecutor.
+    """
+    print(f"\n=== Preparing State data for {dataset} / {size} / {quality} ===")
+
+    profile_name = f"scaling_{dataset}_{size}_{quality}".replace(".", "_")
+
+    train_base = path_to_data_dir / dataset / f"{size}" / f"{quality}"
+    val_base = path_to_data_dir / dataset / "validation" / f"{quality}"
+    test_base = path_to_data_dir / dataset / "test" / f"{quality}"
+
+    pd_train = PrepareData(base_dir=str(train_base))
+    pd_val = PrepareData(base_dir=str(val_base))
+    pd_test = PrepareData(base_dir=str(test_base))
+
+    train_csv = pd_train.prepare_for_state(profile_name, split="train")
+    pd_val.prepare_for_state(profile_name, split="val")
+    pd_test.prepare_for_state(profile_name, split="test")
+
+    profile_dir = pd_train.preprocessed / "state_data"
+    combined_val_csv = profile_dir / "val_combined.csv"
+    val_h5ad = pd_val.preprocessed / "preprocessed.h5ad"
+    test_h5ad = pd_test.preprocessed / "preprocessed.h5ad"
+    combined_val_csv.write_text(
+        f"species,path,names\n"
+        f"human,{val_h5ad},{profile_name}_val\n"
+        f"human,{test_h5ad},{profile_name}_test\n"
+    )
+
+    val_only_csv = profile_dir / "val_only.csv"
+    val_only_csv.write_text(
+        f"species,path,names\n"
+        f"human,{val_h5ad},{profile_name}_val\n"
+    )
+
+    config_path = profile_dir / "state_config.yaml"
+    shutil.copy(state_defaults_yaml, config_path)
+
+    cmd = [
+        str(state_python), "-m", "state", "emb", "preprocess",
+        "--profile-name", profile_name,
+        "--train-csv", str(train_csv),
+        "--val-csv", str(combined_val_csv),
+        "--output-dir", str(profile_dir),
+        "--config-file", str(config_path),
+    ]
+    if esm_embeddings_path:
+        cmd.extend(["--all-embeddings", esm_embeddings_path])
+    print(f"  Running: {' '.join(cmd)}")
+    subprocess.run(cmd, cwd=str(state_package_dir), check=True)
+
+    from omegaconf import OmegaConf
+
+    cfg = OmegaConf.load(str(config_path))
+    preprocessed_val_csv = Path(cfg.dataset[profile_name].val)
+    val_only_out = profile_dir / f"val_only_{profile_name}.csv"
+    df_val = pd.read_csv(str(preprocessed_val_csv))
+    df_val = df_val[df_val["names"].str.endswith("_val")]
+    df_val.to_csv(str(val_only_out), index=False)
+    assert val_only_out.exists(), f"val_only CSV not written: {val_only_out}"
+    cfg.dataset[profile_name].val = str(val_only_out)
+    cfg.dataset[profile_name].num_datasets = len(
+        pd.read_csv(str(cfg.dataset[profile_name].train))
+    ) + len(df_val)
+    OmegaConf.save(cfg, str(config_path))
+    cfg_verify = OmegaConf.load(str(config_path))
+    assert str(val_only_out) in cfg_verify.dataset[profile_name].val, (
+        f"Config patching failed: val still points to {cfg_verify.dataset[profile_name].val}"
+    )
+    print(f"  Config patched: val uses val-only (no test leakage)")
+    print(f"  Profile saved to {profile_dir}")
+
+
 class ExperimentJobIterator:
     """Iterator that yields experiment job arguments with GPU allocation handled automatically."""
 
@@ -407,15 +523,20 @@ class ExperimentJobIterator:
         self.experiment_iterator = iter(self.experiment_combinations)
         self.gpu_generators = {}
 
-    def _get_config_for_size(self, algo: str, size: int) -> dict:
+    def _get_config_for_size(self, algo: str, size: int, dataset: str | None = None) -> dict:
+        max_size = max(self.sizes)
         if algo == "Geneformer":
-            max_epochs = max(1, int(10 * (10_000_000 / size)))
-            print(f"Max epochs for {algo} with {size} cells: {max_epochs}")
+            max_epochs = max(1, int(10 * (max_size / size)))
+            print(f"Max epochs for {algo} with {size} cells (max_size={max_size}): {max_epochs}")
             return {"max_epochs": max_epochs, "early_stopping_patience": 3}
         elif algo == "SCVI":
-            max_epochs = max(1, int(1 * (10_000_000 / size)))
-            print(f"Max epochs for {algo} with {size} cells: {max_epochs}")
+            max_epochs = max(1, int(1 * (max_size / size)))
+            print(f"Max epochs for {algo} with {size} cells (max_size={max_size}): {max_epochs}")
             return {"max_epochs": max_epochs, "early_stopping_patience": 3}
+        elif algo == "State":
+            max_steps = 15_000
+            print(f"Max steps for {algo} with {size} cells: {max_steps}; early stopping patience=5")
+            return {"max_steps": max_steps, "early_stopping_patience": 5}
         else:
             raise ValueError(f"Algorithm {algo} not supported")
 
@@ -433,8 +554,8 @@ class ExperimentJobIterator:
 
         device = next(self.gpu_generators[algo])
 
-        if algo == "Geneformer" or algo == "SCVI":
-            config = self._get_config_for_size(algo, size)
+        if algo in ("Geneformer", "SCVI", "State"):
+            config = self._get_config_for_size(algo, size, dataset=dataset)
 
             job_args = {
                 "dataset": dataset,
@@ -442,10 +563,14 @@ class ExperimentJobIterator:
                 "quality": quality,
                 "algo": algo,
                 "device": device,
-                "max_epochs": config["max_epochs"],
                 "early_stopping_patience": config["early_stopping_patience"],
                 "signal_columns": self.signal_columns,
+                "path_to_data_dir": self.path_to_data_dir,
             }
+            if "max_epochs" in config:
+                job_args["max_epochs"] = config["max_epochs"]
+            if "max_steps" in config:
+                job_args["max_steps"] = config["max_steps"]
 
             time.sleep(self.sleep_time)
         else:
@@ -456,32 +581,150 @@ class ExperimentJobIterator:
                 "algo": algo,
                 "device": device,
                 "signal_columns": self.signal_columns,
+                "path_to_data_dir": self.path_to_data_dir,
             }
 
         return job_args
 
     def _get_available_gpu(self, algo: str, timeout: int = 259200):
         """Generator that yields available GPU IDs when they become available."""
-        mem_limit = self.mem_limit[algo] if algo in self.mem_limit else self.mem_limit["default"]
+        mem_limit = self.mem_limit.get(algo) or self.mem_limit.get("default") or 0
+
+        # When mem_limit is disabled (<=0), just round-robin GPUs without
+        # memory checks.  This avoids blocking when jobs_per_gpu handles
+        # concurrency externally.
+        if mem_limit <= 0:
+            gpu_idx = 0
+            while True:
+                yield gpu_idx % 8  # placeholder; device is overridden by parallel_run
+                gpu_idx += 1
+
         start_time = time.time()
 
+        def _get_gpu_memory_info():
+            """Get GPU memory info, supporting both NVIDIA and ROCm."""
+            try:
+                gpu_info = subprocess.check_output(
+                    ["nvidia-smi", "--query-gpu=index,memory.used", "--format=csv,noheader,nounits"],
+                    stderr=subprocess.DEVNULL
+                ).decode()
+                gpu_data = []
+                for line in gpu_info.strip().split("\n"):
+                    if line.strip():
+                        gpu_id, mem_used = map(int, line.split(", "))
+                        gpu_data.append((gpu_id, mem_used))
+                return gpu_data
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                try:
+                    gpu_info = subprocess.check_output(
+                        ["rocm-smi", "--alldevices", "--showmemuse", "--csv"],
+                        stderr=subprocess.PIPE
+                    ).decode()
+                    gpu_data = []
+                    lines = gpu_info.strip().split("\n")
+                    
+                    if len(lines) < 2:
+                        print(f"Warning: rocm-smi returned insufficient data. Output: {gpu_info[:200]}")
+                        return []
+                    
+                    header = lines[0].lower()
+                    mem_col_idx = None
+                    gpu_id_col_idx = 0
+                    
+                    for i, col in enumerate(header.split(",")):
+                        col = col.strip()
+                        if "vram" in col or ("memory" in col and "allocated" in col):
+                            mem_col_idx = i
+                            break
+                    
+                    if mem_col_idx is None:
+                        mem_col_idx = 1
+                    
+                    for i, line in enumerate(lines[1:], 1):
+                        if not line.strip():
+                            continue
+                        parts = [p.strip() for p in line.split(",")]
+                        if len(parts) > max(gpu_id_col_idx, mem_col_idx):
+                            try:
+                                device_str = parts[gpu_id_col_idx]
+                                if device_str.startswith("card"):
+                                    gpu_id = int(device_str.replace("card", ""))
+                                else:
+                                    gpu_id = int(device_str)
+                                
+                                mem_str = parts[mem_col_idx].strip()
+                                mem_used = int(float(mem_str))
+                                
+                                gpu_data.append((gpu_id, mem_used))
+                            except (ValueError, IndexError) as e:
+                                print(f"Warning: Failed to parse GPU info from line {i}: {line[:100]}, error: {e}")
+                                continue
+                    
+                    if not gpu_data:
+                        print(f"Warning: No GPU data parsed from rocm-smi. Output: {gpu_info[:500]}")
+                    
+                    return gpu_data
+                except subprocess.CalledProcessError as e:
+                    print(f"Error running rocm-smi: {e.stderr.decode() if e.stderr else str(e)}")
+                    return []
+                except FileNotFoundError:
+                    print("Warning: rocm-smi command not found")
+                    return []
+                except Exception as e:
+                    print(f"Unexpected error getting GPU info: {e}")
+                    return []
+
         while True:
-            gpu_info = subprocess.check_output(
-                ["nvidia-smi", "--query-gpu=index,memory.used", "--format=csv,noheader,nounits"]
-            ).decode()
+            gpu_data = _get_gpu_memory_info()
+            
+            if not gpu_data:
+                print("Warning: Could not detect any GPUs. Trying fallback method...")
+                try:
+                    result = subprocess.run(
+                        ["rocm-smi"],
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+                    if result.returncode == 0:
+                        gpu_ids = []
+                        for line in result.stdout.split("\n"):
+                            if "GPU[" in line:
+                                try:
+                                    start = line.find("GPU[") + 4
+                                    end = line.find("]", start)
+                                    if end > start:
+                                        gpu_id = int(line[start:end])
+                                        if 0 <= gpu_id < 16:
+                                            if gpu_id not in gpu_ids:
+                                                gpu_ids.append(gpu_id)
+                                                gpu_data.append((gpu_id, 0))
+                                except (ValueError, IndexError):
+                                    continue
+                        if gpu_data:
+                            print(f"Fallback: Detected {len(gpu_data)} GPUs (IDs: {sorted(gpu_ids)}), assuming 0 MB used")
+                        else:
+                            print(f"Fallback: Could not parse GPU IDs from rocm-smi output")
+                except Exception as e:
+                    print(f"Fallback method also failed: {e}")
+            
             available_gpus = []
-            for line in gpu_info.strip().split("\n"):
-                gpu_id, mem_used = map(int, line.split(", "))
-                print(f"GPU {gpu_id} has {mem_used} MB used")
+            for gpu_id, mem_used in gpu_data:
+                print(f"GPU {gpu_id} has {mem_used} MB used (limit: {mem_limit} MB)")
                 if mem_used < mem_limit:
                     available_gpus.append(gpu_id)
-                    print(f"GPU {available_gpus} is available")
-
+            
             if available_gpus:
-                yield random.choice(available_gpus)
+                selected_gpu = random.choice(available_gpus)
+                print(f"Selected GPU {selected_gpu} from available GPUs: {available_gpus}")
+                yield selected_gpu
             else:
+                if gpu_data:
+                    print(f"No GPUs available (all {len(gpu_data)} GPUs exceed memory limit of {mem_limit} MB)")
+                else:
+                    print("No GPUs detected at all")
                 elapsed_time = time.time() - start_time
-                print(f"No GPUs available, waiting for a free GPU... (elapsed: {elapsed_time/60:.1f} minutes)")
+                print(f"Waiting for a free GPU... (elapsed: {elapsed_time/60:.1f} minutes)")
                 if elapsed_time > timeout:
                     print(f"Warning: No GPU available after {timeout/60:.1f} minutes, continuing to wait...")
                     start_time = time.time()
@@ -525,6 +768,15 @@ class Experiments:
                 100_000: {"max_epochs": 100, "early_stopping_patience": 3},
                 1_000_000: {"max_epochs": 10, "early_stopping_patience": 3},
                 10_000_000: {"max_epochs": 10, "early_stopping_patience": 3},
+            },
+            "State": {
+                # Fixed step budget (no early stopping); steps ≈ max_epochs × (size // 64)
+                100: {"max_epochs": 100_000, "early_stopping_patience": 0, "max_steps": 100_000},
+                1_000: {"max_epochs": 10_000, "early_stopping_patience": 0, "max_steps": 150_000},
+                10_000: {"max_epochs": 1_000, "early_stopping_patience": 0, "max_steps": 156_000},
+                100_000: {"max_epochs": 100, "early_stopping_patience": 0, "max_steps": 156_200},
+                1_000_000: {"max_epochs": 10, "early_stopping_patience": 0, "max_steps": 156_250},
+                10_000_000: {"max_epochs": 10, "early_stopping_patience": 0, "max_steps": 1_562_500},
             },
         }
 
@@ -789,6 +1041,78 @@ class Experiments:
                         model_input_size=512, signal_columns=self.signal_columns, chunk_size=chunk_size, nproc=nproc
                     )
 
+    def prepare_state_data(self, esm_embeddings_path: str | None = None, max_workers: int = 1):
+        """Run ``state emb preprocess`` for every dataset / size / quality.
+
+        Parameters
+        ----------
+        esm_embeddings_path : str, optional
+            Path to a ``.pt`` file mapping gene names to ESM embedding
+            tensors.  When provided, STATE will use these embeddings
+            instead of one-hot vectors.  Defaults to the project-wide
+            merged ESM file at ``data/other/esm/merged_esm_embeddings.pt``.
+        max_workers : int, optional
+            Number of parallel workers for preprocessing.  Each
+            (dataset, size, quality) combo writes to its own directory
+            so they can safely run concurrently.  Default is 1
+            (sequential).
+
+        For each (dataset, size, quality) combination this method:
+        1. Writes CSV manifests for train, validation, and test splits
+           into ``{size}/{quality}/preprocessed/state_data/``.
+        2. Copies the default STATE config.
+        3. Calls ``state emb preprocess`` which creates one-hot gene
+           embeddings, per-dataset mappings, and valid-gene masks — all
+           saved into the train split's ``state_data/`` directory.
+
+        After this, ``State.train()`` can skip preprocessing and go
+        straight to ``state emb fit``.
+        """
+        from scaling_laws.paths import STATE_PYTHON, STATE_PACKAGE_DIR, STATE_DEFAULTS_YAML
+        state_python = STATE_PYTHON
+        state_package_dir = STATE_PACKAGE_DIR
+        state_defaults_yaml = STATE_DEFAULTS_YAML
+
+        # Resolve ESM embeddings path
+        if esm_embeddings_path is None:
+            default_esm = self.path_to_data_dir / "other" / "esm" / "merged_esm_embeddings.pt"
+            if default_esm.exists():
+                esm_embeddings_path = str(default_esm)
+                print(f"  Using ESM embeddings: {esm_embeddings_path}")
+            else:
+                print("  No ESM embeddings found, falling back to one-hot")
+
+        combos = [
+            (dataset, size, quality)
+            for dataset in self.datasets
+            for size in self.sizes
+            for quality in self.qualities
+        ]
+
+        if max_workers <= 1:
+            for dataset, size, quality in combos:
+                _prepare_state_data_single(
+                    self.path_to_data_dir, dataset, size, quality,
+                    esm_embeddings_path, state_python, state_package_dir, state_defaults_yaml,
+                )
+        else:
+            print(f"  Preprocessing {len(combos)} combos with {max_workers} workers")
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                futures = {
+                    executor.submit(
+                        _prepare_state_data_single,
+                        self.path_to_data_dir, dataset, size, quality,
+                        esm_embeddings_path, state_python, state_package_dir, state_defaults_yaml,
+                    ): (dataset, size, quality)
+                    for dataset, size, quality in combos
+                }
+                for future in as_completed(futures):
+                    dataset, size, quality = futures[future]
+                    try:
+                        future.result()
+                    except Exception as e:
+                        print(f"  FAILED: {dataset} / {size} / {quality}: {e}")
+
     def _record_failed_job(self, job_args: dict, error: str, file_path: str = "failed_jobs.txt"):
         """Record failed job configuration to a file with timestamp."""
         from datetime import datetime
@@ -810,7 +1134,7 @@ class Experiments:
 
         for dataset, size, quality, algo in experiment_iterator:
             try:
-                if algo == "Geneformer" or algo == "SCVI":
+                if algo in ("Geneformer", "SCVI", "State"):
                     self.single_job(dataset, size, quality, algo, **self.configs[algo][size], device=self.device)
                 else:
                     self.single_job(dataset, size, quality, algo)
@@ -826,6 +1150,18 @@ class Experiments:
                 self._record_failed_job(job_args, ".", file_path="failed.txt")
                 print(f"Error running {algo} for {dataset} with {size} cells and {quality} quality: {e}")
 
+    @staticmethod
+    def _detect_gpus() -> list[int]:
+        """Return list of GPU IDs visible on this machine."""
+        try:
+            out = subprocess.check_output(
+                ["nvidia-smi", "--query-gpu=index", "--format=csv,noheader,nounits"],
+                stderr=subprocess.DEVNULL,
+            ).decode()
+            return [int(line.strip()) for line in out.strip().split("\n") if line.strip()]
+        except Exception:
+            return list(range(8))
+
     def parallel_run(
         self,
         max_workers: int = 40,
@@ -833,12 +1169,44 @@ class Experiments:
         retrain: bool = True,
         reembed: bool = True,
         recompute_mutual_information: bool = True,
+        recompute_loss: bool = False,
         checkpoint_path: str | None = None,
         mem_limit: dict[str, int] | None = None,
         reembed_checkpoint: str | None = None,
         batch_size_inference: int | None = None,
+        max_epochs: int | None = None,
+        early_stopping_patience: int | None = None,
+        max_steps: int | None = None,
+        jobs_per_gpu: int = 0,
+        log_dir: str | None = None,
     ):
-        """SCVI needs to run alone since it blocks all of the GPUs"""
+        """Run experiments in parallel across GPUs.
+
+        Parameters
+        ----------
+        jobs_per_gpu : int
+            0 — disabled (default): GPU allocation is handled by the
+            iterator's memory-based heuristic via ``mem_limit``.
+            1 — one job per GPU at a time (exclusive).
+            2, 3, … — up to N concurrent jobs per GPU.
+            The number of GPUs is auto-detected and ``max_workers``
+            is capped to ``jobs_per_gpu * num_gpus``.
+        log_dir : str, optional
+            Directory to save per-job log files.  Each job writes its
+            stdout/stderr to ``<log_dir>/<algo>_<size>_<quality>.txt``.
+            If None, no logs are saved.
+        """
+        if log_dir is not None:
+            log_dir = Path(log_dir)
+            log_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Saving job logs to: {log_dir}")
+
+        # When jobs_per_gpu > 0, GPU assignment is handled by the slot pool
+        # so disable the iterator's memory-based GPU blocking to avoid stalls.
+        if jobs_per_gpu > 0:
+            effective_mem_limit = {"default": 0}
+        else:
+            effective_mem_limit = mem_limit or {"Geneformer": 100, "default": 33_000}
 
         job_iterator = ExperimentJobIterator(
             datasets=self.datasets,
@@ -849,13 +1217,22 @@ class Experiments:
             path_to_data_dir=self.path_to_data_dir,
             signal_columns=self.signal_columns,
             sleep_time=sleep_time,
-            mem_limit=mem_limit or {"Geneformer": 100, "default": 33_000},
+            mem_limit=effective_mem_limit,
         )
+
+        if jobs_per_gpu > 0:
+            all_gpus = self._detect_gpus()
+            # Build a slot pool: each GPU appears jobs_per_gpu times
+            gpu_slots = all_gpus * jobs_per_gpu
+            max_workers = len(gpu_slots)
+            free_gpus = list(gpu_slots)
+            print(f"GPU scheduling: {len(all_gpus)} GPUs x {jobs_per_gpu} jobs/GPU = max_workers={max_workers}")
 
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             active_futures = {}
 
             print(f"Submitting initial batch to max workers {max_workers}...")
+            single_job_path = Path(__file__).parent.parent.parent.parent.parent / "single_job.py"
             jobs_submitted = 0
             for i in range(max_workers):
                 try:
@@ -865,12 +1242,23 @@ class Experiments:
                             "retrain": retrain,
                             "reembed": reembed,
                             "recompute_mutual_information": recompute_mutual_information,
+                            "recompute_loss": recompute_loss,
                             "checkpoint_path": checkpoint_path,
                             "reembed_checkpoint": reembed_checkpoint,
                             "batch_size_inference": batch_size_inference,
                             "seed": self.seed,
+                            "single_job_path": single_job_path,
+                            "log_dir": str(log_dir) if log_dir is not None else None,
                         }
                     )
+                    if max_epochs is not None:
+                        job_args["max_epochs"] = max_epochs
+                    if early_stopping_patience is not None:
+                        job_args["early_stopping_patience"] = early_stopping_patience
+                    if max_steps is not None:
+                        job_args["max_steps"] = max_steps
+                    if jobs_per_gpu > 0:
+                        job_args["device"] = free_gpus.pop(0)
                     future = executor.submit(JobProcessor(**job_args))
                     active_futures[future] = job_args
                     jobs_submitted += 1
@@ -885,20 +1273,26 @@ class Experiments:
 
             total_jobs = len(list(itertools.product(self.datasets, self.sizes, self.qualities, self.algos)))
             completed_jobs = 0
+            failed_jobs = 0
+            pbar = tqdm(total=total_jobs, desc="Jobs", unit="job")
 
             while active_futures:
                 completed_future = next(as_completed(active_futures))
                 completed_job_args = active_futures.pop(completed_future)
                 completed_jobs += 1
+                pbar.update(1)
+
+                if jobs_per_gpu > 0:
+                    free_gpus.append(completed_job_args["device"])
 
                 try:
                     completed_future.result()
-                    print(
-                        f"Completed job {completed_jobs}/{total_jobs}: {completed_job_args['algo']} for {completed_job_args['dataset']} ({completed_job_args['size']} cells, quality {completed_job_args['quality']})"
-                    )
+                    pbar.set_postfix(done=completed_jobs, failed=failed_jobs, active=len(active_futures))
                 except Exception as e:
+                    failed_jobs += 1
+                    pbar.set_postfix(done=completed_jobs, failed=failed_jobs, active=len(active_futures))
                     self._record_failed_job(completed_job_args, str(e))
-                    print(f"Error in job {completed_job_args}: {e}")
+                    tqdm.write(f"FAIL: {completed_job_args['algo']} {completed_job_args['size']}x{completed_job_args['quality']}: {e}")
 
                 try:
                     job_args = next(job_iterator)
@@ -907,12 +1301,23 @@ class Experiments:
                             "retrain": retrain,
                             "reembed": reembed,
                             "recompute_mutual_information": recompute_mutual_information,
+                            "recompute_loss": recompute_loss,
                             "checkpoint_path": checkpoint_path,
                             "reembed_checkpoint": reembed_checkpoint,
                             "batch_size_inference": batch_size_inference,
                             "seed": self.seed,
+                            "single_job_path": single_job_path,
+                            "log_dir": str(log_dir) if log_dir is not None else None,
                         }
                     )
+                    if max_epochs is not None:
+                        job_args["max_epochs"] = max_epochs
+                    if early_stopping_patience is not None:
+                        job_args["early_stopping_patience"] = early_stopping_patience
+                    if max_steps is not None:
+                        job_args["max_steps"] = max_steps
+                    if jobs_per_gpu > 0:
+                        job_args["device"] = free_gpus.pop(0)
                     new_future = executor.submit(JobProcessor(**job_args))
                     active_futures[new_future] = job_args
                     print(
@@ -922,7 +1327,8 @@ class Experiments:
                     print(f"No more jobs to submit. Active jobs: {len(active_futures)}")
                     pass
 
-            print(f"All {completed_jobs} jobs completed!")
+            pbar.close()
+            print(f"All {completed_jobs} jobs completed! ({failed_jobs} failed)")
 
     def evaluate_checkpoints_mutual_information(
         self,
@@ -983,6 +1389,7 @@ class Experiments:
         algo,
         max_epochs: int = None,
         early_stopping_patience: int = None,
+        max_steps: int | None = None,
         device: int = 0,
         retrain: bool = True,
         reembed: bool = True,
@@ -990,6 +1397,7 @@ class Experiments:
         checkpoint_path: str | None = None,
         reembed_checkpoint: str | None = None,
         batch_size_inference: int | None = None,
+        recompute_loss: bool = False,
     ):
 
         base_dir = self.path_to_data_dir / f"{dataset}" / f"{size}" / f"{quality}"
@@ -999,20 +1407,23 @@ class Experiments:
         if reembed_checkpoint:
             model_name = reembed_checkpoint.split("/")[-1]
         else:
-            model_name = None
+            model_name = "model"
 
         if algo == "Geneformer":
-            method = Geneformer(
+            gf_kwargs = dict(
                 base_dir=base_dir,
                 lengths_path=base_dir / "preprocessed" / "lengths.pkl",
                 signal_columns=self.signal_columns,
                 device=device,
-                max_epochs=max_epochs,
-                early_stopping_patience=early_stopping_patience,
                 dataset_name=self.datasets[0],
                 seed=self.seed,
                 model_name=model_name,
             )
+            if max_epochs is not None:
+                gf_kwargs["max_epochs"] = max_epochs
+            if early_stopping_patience is not None:
+                gf_kwargs["early_stopping_patience"] = early_stopping_patience
+            method = Geneformer(**gf_kwargs)
         elif algo == "RandomProjection":
             method = RandomProjection(
                 base_dir=base_dir,
@@ -1020,15 +1431,18 @@ class Experiments:
                 seed=self.seed,
             )
         elif algo == "SCVI":
-            method = SCVI(
+            scvi_kwargs = dict(
                 base_dir=base_dir,
                 signal_columns=self.signal_columns,
                 device=device,
-                max_epochs=max_epochs,
-                early_stopping_patience=early_stopping_patience,
                 dataset_name=self.datasets[0],
                 seed=self.seed,
             )
+            if max_epochs is not None:
+                scvi_kwargs["max_epochs"] = max_epochs
+            if early_stopping_patience is not None:
+                scvi_kwargs["early_stopping_patience"] = early_stopping_patience
+            method = SCVI(**scvi_kwargs)
         elif algo == "PCA":
             method = PCA(
                 base_dir=base_dir,
@@ -1036,6 +1450,20 @@ class Experiments:
                 device=device,
                 seed=self.seed,
             )
+        elif algo == "State":
+            state_kwargs = dict(
+                base_dir=base_dir,
+                device=device,
+                dataset_name=self.datasets[0],
+                seed=self.seed,
+            )
+            if max_steps is not None:
+                state_kwargs["max_steps"] = max_steps
+            elif max_epochs is not None:
+                state_kwargs["max_epochs"] = max_epochs
+            if early_stopping_patience is not None:
+                state_kwargs["early_stopping_patience"] = early_stopping_patience
+            method = State(**state_kwargs)
 
         print(
             f"Running {algo} for {dataset} with {size} cells and {quality} quality on device {device} (using max_epochs={max_epochs} and early_stopping_patience={early_stopping_patience})"
@@ -1049,6 +1477,8 @@ class Experiments:
                 method.embed()
         if recompute_mutual_information:
             method.mutual_information()
+        if recompute_loss:
+            method.compute_test_loss()
 
     def evaluate_checkpoints_mutual_information_parallel(
         self,
@@ -1102,6 +1532,7 @@ class Experiments:
                     "early_stopping_patience": 3,
                     "signal_columns": self.signal_columns,
                     "seed": self.seed,
+                    "path_to_data_dir": self.path_to_data_dir,
                 }
                 all_jobs.append(job)
 
@@ -1134,27 +1565,135 @@ class Experiments:
                 mem_limit = self.mem_limit[algo] if algo in self.mem_limit else self.mem_limit["default"]
                 start_time = time.time()
 
+                def _get_gpu_memory_info():
+                    """Get GPU memory info, supporting both NVIDIA and ROCm."""
+                    try:
+                        gpu_info = subprocess.check_output(
+                            ["nvidia-smi", "--query-gpu=index,memory.used", "--format=csv,noheader,nounits"],
+                            stderr=subprocess.DEVNULL
+                        ).decode()
+                        gpu_data = []
+                        for line in gpu_info.strip().split("\n"):
+                            if line.strip():
+                                gpu_id, mem_used = map(int, line.split(", "))
+                                gpu_data.append((gpu_id, mem_used))
+                        return gpu_data
+                    except (subprocess.CalledProcessError, FileNotFoundError):
+                        try:
+                            gpu_info = subprocess.check_output(
+                                ["rocm-smi", "--alldevices", "--showmemuse", "--csv"],
+                                stderr=subprocess.PIPE
+                            ).decode()
+                            gpu_data = []
+                            lines = gpu_info.strip().split("\n")
+                            
+                            if len(lines) < 2:
+                                print(f"Warning: rocm-smi returned insufficient data. Output: {gpu_info[:200]}")
+                                return []
+                            
+                            header = lines[0].lower()
+                            mem_col_idx = None
+                            gpu_id_col_idx = 0
+                            
+                            for i, col in enumerate(header.split(",")):
+                                col = col.strip()
+                                if "vram" in col or ("memory" in col and "allocated" in col):
+                                    mem_col_idx = i
+                                    break
+                            
+                            if mem_col_idx is None:
+                                mem_col_idx = 1
+                            
+                            for i, line in enumerate(lines[1:], 1):
+                                if not line.strip():
+                                    continue
+                                parts = [p.strip() for p in line.split(",")]
+                                if len(parts) > max(gpu_id_col_idx, mem_col_idx):
+                                    try:
+                                        device_str = parts[gpu_id_col_idx]
+                                        if device_str.startswith("card"):
+                                            gpu_id = int(device_str.replace("card", ""))
+                                        else:
+                                            gpu_id = int(device_str)
+                                        
+                                        mem_str = parts[mem_col_idx].strip()
+                                        mem_used = int(float(mem_str))
+                                        
+                                        gpu_data.append((gpu_id, mem_used))
+                                    except (ValueError, IndexError) as e:
+                                        print(f"Warning: Failed to parse GPU info from line {i}: {line[:100]}, error: {e}")
+                                        continue
+                            
+                            if not gpu_data:
+                                print(f"Warning: No GPU data parsed from rocm-smi. Output: {gpu_info[:500]}")
+                            
+                            return gpu_data
+                        except subprocess.CalledProcessError as e:
+                            print(f"Error running rocm-smi: {e.stderr.decode() if e.stderr else str(e)}")
+                            return []
+                        except FileNotFoundError:
+                            print("Warning: rocm-smi command not found")
+                            return []
+                        except Exception as e:
+                            print(f"Unexpected error getting GPU info: {e}")
+                            return []
+
                 while True:
-                    gpu_info = subprocess.check_output(
-                        ["nvidia-smi", "--query-gpu=index,memory.used", "--format=csv,noheader,nounits"]
-                    ).decode()
+                    gpu_data = _get_gpu_memory_info()
+                    
+                    if not gpu_data:
+                        print("Warning: Could not detect any GPUs. Trying fallback method...")
+                        try:
+                            result = subprocess.run(
+                                ["rocm-smi"],
+                                capture_output=True,
+                                text=True,
+                                timeout=5
+                            )
+                            if result.returncode == 0:
+                                gpu_ids = []
+                                for line in result.stdout.split("\n"):
+                                    if "GPU[" in line:
+                                        try:
+                                            start = line.find("GPU[") + 4
+                                            end = line.find("]", start)
+                                            if end > start:
+                                                gpu_id = int(line[start:end])
+                                                if 0 <= gpu_id < 16:
+                                                    if gpu_id not in gpu_ids:
+                                                        gpu_ids.append(gpu_id)
+                                                        gpu_data.append((gpu_id, 0))
+                                        except (ValueError, IndexError):
+                                            continue
+                                if gpu_data:
+                                    print(f"Fallback: Detected {len(gpu_data)} GPUs (IDs: {sorted(gpu_ids)}), assuming 0 MB used")
+                                else:
+                                    print(f"Fallback: Could not parse GPU IDs from rocm-smi output")
+                        except Exception as e:
+                            print(f"Fallback method also failed: {e}")
+                    
                     available_gpus = []
-                    for line in gpu_info.strip().split("\n"):
-                        gpu_id, mem_used = map(int, line.split(", "))
+                    for gpu_id, mem_used in gpu_data:
                         if mem_used < mem_limit:
                             available_gpus.append(gpu_id)
 
                     if available_gpus:
-                        yield random.choice(available_gpus)
+                        selected_gpu = random.choice(available_gpus)
+                        yield selected_gpu
                     else:
+                        if gpu_data:
+                            print(f"No GPUs available (all {len(gpu_data)} GPUs exceed memory limit of {mem_limit} MB)")
+                        else:
+                            print("No GPUs detected at all")
                         elapsed_time = time.time() - start_time
-                        print(f"No GPUs available, waiting for a free GPU... (elapsed: {elapsed_time/60:.1f} minutes)")
+                        print(f"Waiting for a free GPU... (elapsed: {elapsed_time/60:.1f} minutes)")
                         if elapsed_time > timeout:
                             print(f"Warning: No GPU available after {timeout/60:.1f} minutes, continuing to wait...")
                             start_time = time.time()
                         time.sleep(60)
 
         job_iterator = CheckpointJobIterator(all_jobs, mem_limit)
+        single_job_path = Path(__file__).parent.parent.parent.parent.parent / "single_job.py"
 
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             active_futures = {}
@@ -1164,6 +1703,7 @@ class Experiments:
             for i in range(max_workers):
                 try:
                     job_args = next(job_iterator)
+                    job_args["single_job_path"] = single_job_path
                     future = executor.submit(JobProcessor(**job_args))
                     active_futures[future] = job_args
                     jobs_submitted += 1
@@ -1195,6 +1735,7 @@ class Experiments:
 
                 try:
                     job_args = next(job_iterator)
+                    job_args["single_job_path"] = single_job_path
                     new_future = executor.submit(JobProcessor(**job_args))
                     active_futures[new_future] = job_args
                     print(
@@ -1215,22 +1756,35 @@ class JobProcessor:
         algo = kwargs["algo"]
         max_epochs = kwargs.get("max_epochs", 1)
         early_stopping_patience = kwargs.get("early_stopping_patience", 1)
+        max_steps = kwargs.get("max_steps", None)
         device = kwargs.get("device", 0)
         signal_columns = kwargs.get("signal_columns", [])
         retrain = kwargs.get("retrain", True)
         reembed = kwargs.get("reembed", True)
         recompute_mutual_information = kwargs.get("recompute_mutual_information", True)
+        recompute_loss = kwargs.get("recompute_loss", False)
         checkpoint_path = kwargs.get("checkpoint_path", None)
         reembed_checkpoint = kwargs.get("reembed_checkpoint", None)
         batch_size_inference = kwargs.get("batch_size_inference", None)
         seed = kwargs.get("seed", 42)
+        path_to_data_dir = kwargs.get("path_to_data_dir", None)
 
         print(dataset, size, quality, algo, max_epochs, early_stopping_patience, device)
-        path_to_data_dir = Path("/home/jupyter/igor_repos/noise_scaling_laws/data")
+        
+        if path_to_data_dir is None:
+            path_to_data_dir = Path("/home/jupyter/igor_repos/noise_scaling_laws/data")
+        else:
+            path_to_data_dir = Path(path_to_data_dir)
+        
+        single_job_path = kwargs.get("single_job_path", None)
+        if single_job_path is None:
+            single_job_path = Path(__file__).parent.parent.parent.parent.parent / "single_job.py"
+        else:
+            single_job_path = Path(single_job_path)
 
         self.cmd = [
             "python",
-            "/home/jupyter/igor_repos/noise_scaling_laws/single_job.py",
+            str(single_job_path),
             "--sizes",
             str(size),
             "--qualities",
@@ -1253,9 +1807,14 @@ class JobProcessor:
             str(reembed).lower(),
             "--recompute_mutual_information",
             str(recompute_mutual_information).lower(),
+            "--recompute_loss",
+            str(recompute_loss).lower(),
             "--seed",
             str(seed),
         ]
+
+        if max_steps is not None:
+            self.cmd.extend(["--max_steps", str(max_steps)])
 
         if signal_columns:
             self.cmd.extend(["--signal_columns"] + signal_columns)
@@ -1269,10 +1828,112 @@ class JobProcessor:
         if batch_size_inference:
             self.cmd.extend(["--batch_size_inference", str(batch_size_inference)])
 
+        log_dir = kwargs.get("log_dir", None)
+        if log_dir is not None:
+            self.log_path = Path(log_dir) / f"{algo}_{size}_{quality}.txt"
+        else:
+            self.log_path = None
+
+        self.job_info = {
+            "dataset": dataset,
+            "size": size,
+            "quality": quality,
+            "algo": algo,
+            "max_epochs": max_epochs,
+            "early_stopping_patience": early_stopping_patience,
+            "device": device,
+            "seed": seed,
+        }
+
     def __call__(self):
         try:
-            subprocess.run(self.cmd, check=True)
+            import pty
+            import sys as _sys
+
+            ji = self.job_info
+            tag = f"[{ji['dataset']},{ji['quality']},{ji['size']},{ji['algo']}]"
+
+            if self.log_path is not None:
+                env = {**os.environ, "PYTHONUNBUFFERED": "1", "TERM": "xterm", "COLUMNS": "120"}
+                with open(self.log_path, "w") as log_f:
+                    header = "=" * 60 + "\n"
+                    for k, v in ji.items():
+                        header += f"{k}: {v}\n"
+                    header += "=" * 60 + "\n\n"
+                    log_f.write(header)
+                    log_f.flush()
+                    print(header, flush=True)
+
+                    # Use a pseudo-TTY so Lightning shows progress bars
+                    master_fd, slave_fd = pty.openpty()
+                    proc = subprocess.Popen(
+                        self.cmd, stdout=slave_fd, stderr=subprocess.STDOUT,
+                        env=env, close_fds=True,
+                    )
+                    os.close(slave_fd)
+
+                    import re
+
+                    buf = ""
+                    cur_epoch, total_epochs = 0, ji.get("max_epochs", 10)
+                    t_start = time.time()
+
+                    while True:
+                        try:
+                            chunk = os.read(master_fd, 8192)
+                        except OSError:
+                            break
+                        if not chunk:
+                            break
+                        decoded = chunk.decode("utf-8", errors="replace")
+                        log_f.write(decoded)
+                        log_f.flush()
+
+                        # Split on \n and \r to capture progress bar updates
+                        buf += decoded
+                        parts = re.split(r"[\r\n]", buf)
+                        buf = parts[-1]  # keep incomplete tail
+                        for part in parts[:-1]:
+                            part = part.strip()
+                            if not part:
+                                continue
+
+                            # Track epoch from progress bar lines
+                            m = re.match(r"Epoch\s+(\d+)/(\d+)", part)
+                            if m:
+                                cur_epoch = int(m.group(1))
+                                total_epochs = int(m.group(2))
+
+                            # Skip per-batch updates, only show key lines
+                            is_epoch_batch = "Epoch" in part and "it/s" in part
+                            if is_epoch_batch:
+                                continue
+
+                            if any(kw in part for kw in ("Epoch", "Metric", "val_loss", "Training complete",
+                                                          "Embeddings", "MI for", "Error", "Traceback",
+                                                          "success!", "CUDA", "OutOfMemory")):
+                                # Build epoch progress + ETA
+                                elapsed = time.time() - t_start
+                                if cur_epoch > 0:
+                                    eta_s = elapsed / cur_epoch * (total_epochs - cur_epoch)
+                                    eta = f"{eta_s/60:.1f}m" if eta_s >= 60 else f"{eta_s:.0f}s"
+                                else:
+                                    eta = "?"
+                                progress = f"epoch {cur_epoch}/{total_epochs} ETA {eta}"
+                                _sys.stdout.write(f"{tag} ({progress}) {part}\n")
+                                _sys.stdout.flush()
+
+                    os.close(master_fd)
+                    proc.wait()
+                    if proc.returncode != 0:
+                        raise subprocess.CalledProcessError(proc.returncode, self.cmd)
+            else:
+                subprocess.run(self.cmd, check=True)
         except subprocess.CalledProcessError as e:
+            print(f"Error running command: {self.cmd}")
+            print(f"Error: {e}")
+            print(f"Error type: {type(e)}")
+            print(f"Error traceback: {traceback.format_exc()}")
             cmd_args = {}
             for i, arg in enumerate(self.cmd):
                 if arg == "--dataset":
