@@ -98,7 +98,7 @@ The [scaling_laws/](scaling_laws/) package provides:
 - [scvi.py](scaling_laws/scaling_laws/algo/scvi.py): scVI (VAE)
 - [geneformer.py](scaling_laws/scaling_laws/algo/geneformer.py): Geneformer (BERT-like)
 - [rp.py](scaling_laws/scaling_laws/algo/rp.py): Random projection
-- [state.py](scaling_laws/scaling_laws/algo/state.py): STATE (Arc Institute); model code vendored under [STATE/](STATE/), run via [run_state_shendure_whole.py](run_state_shendure_whole.py)
+- [state.py](scaling_laws/scaling_laws/algo/state.py): STATE
 
 
 ### Installation
