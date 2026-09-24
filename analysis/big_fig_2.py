@@ -9,7 +9,7 @@ What this does
    (Caltech101, ESM2 spike sequences, TissueMNIST).
 2. STATE has raw MI sweeps in `collect_mi_results.csv` but no precomputed scaling
    fits.  We fit them here with the *same* lmfit methodology used to generate the
-   other models' parameters (see analysis/archive/2025-11-18_17-10_* and _17-20_*),
+   other models' parameters 
    then persist the STATE rows into `cell_scaling.csv` / `noise_scaling.csv` so the
    rest of the analysis picks them up too.
 3. Reproduces the full 5-row "big figure 2" and adds STATE everywhere the other
@@ -850,7 +850,7 @@ def make_figure(data):
     style_legend(leg_e)
 
     # ========================================================================
-    # ROW 4: Parameter Bars
+    # ROW 4: Parameter Comparison
     # ========================================================================
     gs_row4 = gs_main[3].subgridspec(1, 2, wspace=0.3)
     axs_f = [fig.add_subplot(gs_row4[i]) for i in range(2)]
@@ -883,27 +883,31 @@ def make_figure(data):
 
     means = sens_df.pivot(index="metric", columns="method", values="fitted_u_bar")
     errors = sens_df.pivot(index="metric", columns="method", values="u_bar_error")
-    means[bar_methods].plot(kind="bar", yerr=errors[bar_methods], ax=axs_f[0], color=bar_colors,
-                            capsize=0, ecolor="grey", rot=0, legend=False)
+    x_f = np.arange(len(means.index))
+    offsets = np.linspace(-0.26, 0.26, len(bar_methods))
+    for m, c, off in zip(bar_methods, bar_colors, offsets):
+        axs_f[0].errorbar(x_f + off, means[m].values, yerr=1.96 * errors[m].values,
+                          fmt="o", ms=5, color=c, ecolor=c, elinewidth=1.2, capsize=2)
+    axs_f[0].set_xticks(x_f)
+    axs_f[0].set_xticklabels([s.replace(" MI", "") for s in means.index])
+    axs_f[0].set_xlim(-0.5, len(x_f) - 0.5)
     axs_f[0].set_xlabel("Auxiliary MI metric", fontsize=12)
     axs_f[0].set_ylabel(r"sensitivity ($\bar{\eta}$)", fontsize=12)
     axs_f[0].set_yscale("log")
-    axs_f[0].tick_params(axis="x", rotation=0)
-    axs_f[0].set_xticklabels([t.get_text().replace(" MI", "") for t in axs_f[0].get_xticklabels()])
 
     means = noise_df.pivot(index="metric", columns="method", values="fitted_I_max")
     errors = noise_df.pivot(index="metric", columns="method", values="I_max_error")
-    means[bar_methods].plot(kind="bar", yerr=errors[bar_methods], ax=axs_f[1], color=bar_colors,
-                            capsize=0, ecolor="grey", rot=0)
+    for m, c, off in zip(bar_methods, bar_colors, offsets):
+        axs_f[1].errorbar(x_f + off, means[m].values, yerr=1.96 * errors[m].values,
+                          fmt="o", ms=5, color=c, ecolor=c, elinewidth=1.2, capsize=2,
+                          label=METHOD_LABEL.get(m, m))
+    axs_f[1].set_xticks(x_f)
+    axs_f[1].set_xticklabels([s.replace(" MI", "") for s in means.index])
+    axs_f[1].set_xlim(-0.5, len(x_f) - 0.5)
     axs_f[1].set_xlabel("Auxiliary MI metric", fontsize=12)
     axs_f[1].set_ylabel(r"capacity ($\mathcal{I}_{\max}$)", fontsize=12)
     leg_f = axs_f[1].legend(title="model", bbox_to_anchor=(1.0, 1), loc="upper left")
-    for txt in leg_f.get_texts():
-        if txt.get_text() == "State":
-            txt.set_text("STATE")
     style_legend(leg_f)
-    axs_f[1].tick_params(axis="x", rotation=0)
-    axs_f[1].set_xticklabels([t.get_text().replace(" MI", "") for t in axs_f[1].get_xticklabels()])
 
     # ========================================================================
     # ROW 5: TissueMNIST and Sequences

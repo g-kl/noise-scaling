@@ -1,20 +1,4 @@
-"""Extrapolation test for the noise-scaling law (Reviewer 3, Major Comment 3.4).
-
-Transcriptomic curves are noise-limited, so their saturation value I_max is
-extrapolated rather than observed. Here we use image (TissueMNIST) and protein
-sequence (spike) curves, which *are* measured beyond saturation, to ask when the
-fitted law can recover I_max from the unsaturated part of a curve alone.
-
-For each curve we fit the law to the lowest-SNR points only, progressively
-including more of the curve, and compare the extrapolated I_max to the observed
-saturation plateau. Extrapolation is accurate once the fit reaches the onset of
-saturation, and under-determined when only the linear regime is observed.
-
-Panel (a): a representative curve with the fit obtained from its noise-limited
-points extrapolated through the withheld (saturated) points.
-Panel (b): extrapolation accuracy across all curves and truncation depths.
-
-Writes figures/08_extrapolation_test.png and figures/08_extrapolation_test.csv.
+"""Extrapolation test for the noise-scaling law
 """
 
 import os
