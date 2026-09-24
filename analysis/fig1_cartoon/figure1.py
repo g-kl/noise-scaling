@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 """
-Figure 1 generator (revised).  Self-contained SVG, no dependencies.
-    python3 make_figure1.py   ->   figure1.svg
-
-Layout is authored in POINTS (1 unit = 1 pt).  The canvas is exactly
-6.5 in wide (468 pt), so the SVG renders at true print size and the font
-sizes below are real point sizes.
-
 Fonts
 -----
 Standard text : Latin Modern Sans      (embedded from the TeX "lm" OTFs)
@@ -16,9 +9,6 @@ These are referenced by family name; the sans faces are embedded from the
 TeX "lm" (Latin Modern) OTFs and the serif / typewriter faces from
 "cm-unicode" (CMU *).  Sensible sans / serif / mono fall-backs are chained
 after them.
-
-Blanks to fill are the `n=None` and `umis=None` fields in the DATA block;
-they render as light underlines.
 """
 
 import math, random, os, sys
@@ -129,7 +119,7 @@ GROUPS = [
     ),
     dict(
         modality=["Images"],
-        models=["MobileNetV2"],
+        models=["MobileNetV3"],
         noise=["Pixel-wise additive", "Gaussian;", "pixelation"],
         rows=[
             dict(tag="TissueMNIST", aux=["Kidney cell type", "(fluorescence", "microscopy)"], n=236386, umis="na"),
@@ -367,7 +357,9 @@ g2, mw2, _ = heat(xE,  cy-MW/2, 5, 5, "noise", 42)
 g3, mw3, _ = heat(xXt, cy-MW/2, 5, 5, "noisy", 7)
 add(g,  cap(xX +mw /2, ["input",   "data"]),    sym(xX +mw /2, "X"))
 add(g2, cap(xE +mw2/2, ["noising", "process"]), sym(xE +mw2/2, "\u03B5"))
-add(g3, cap(xXt+mw3/2, ["noised",  "data"]),    sym(xXt+mw3/2, "X\u0303"))
+add(g3, cap(xXt+mw3/2, ["noised",  "data"]),    sym(xXt+mw3/2, "X"),
+    T(xXt+mw3/2+1.43, SYM_Y-2.21, "\u02dc", size=F_SYM, fam=MATH, fill=INK,
+      anchor="middle", style="italic"))
 add(T(xX+MW+OPG, cy+3.5, "+", size=F_SYM, fam=MATH, fill=SUB, anchor="middle"))
 add(T(xE+MW+OPG, cy+3,   "=", size=F_SYM, fam=MATH, fill=SUB, anchor="middle"))
 add(T(xXt+mw3/2, SYM_Y+9, "(SNR \u03B7)", size=F_SUB, fam=MATH, fill=SUB,
@@ -539,22 +531,14 @@ with open(OUT_SVG, "w", encoding="utf-8") as f:
     f.write(svg)
 print(f"wrote {OUT_SVG}   {W:.0f} x {H:.0f} pt   =   6.50 x {H/IN:.2f} in")
 
-# ---- also emit a vector PDF (optional; needs playwright + chromium) --
-# Rendered through Chromium so the embedded Computer Modern faces are used
-# and all geometry stays vector.  Skipped cleanly if playwright is absent.
+# ---- also emit a vector PDF (optional; needs cairosvg) ---------------
+# Rendered through cairo, which keeps the text as text rather than
+# outlining it.  Requires the Latin Modern Sans / CMU Serif / CMU
+# Typewriter Text faces to be installed for fontconfig.
 OUT_PDF = OUT_SVG[:-4] + ".pdf" if OUT_SVG.endswith(".svg") else OUT_SVG + ".pdf"
 try:
-    from playwright.sync_api import sync_playwright
-    _html = ("<!doctype html><meta charset='utf-8'>"
-             "<style>*{margin:0;padding:0}svg{display:block}</style>" + svg)
-    with sync_playwright() as _p:
-        _b = _p.chromium.launch()
-        _pg = _b.new_page()
-        _pg.set_content(_html, wait_until="networkidle")
-        _pg.pdf(path=OUT_PDF, width="6.5in", height=f"{H/IN:.4f}in",
-                print_background=True,
-                margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
-        _b.close()
+    import cairosvg
+    cairosvg.svg2pdf(bytestring=svg.encode("utf-8"), write_to=OUT_PDF)
     print(f"wrote {OUT_PDF}")
 except Exception as _e:
     print(f"(PDF export skipped: {_e})")
